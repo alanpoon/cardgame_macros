@@ -1,7 +1,7 @@
 #[macro_use]
 pub mod game_engine;
 #[macro_use]
-pub mod app_serde;
+pub mod codec_serde;
 #[macro_use]
 pub mod resources;
 pub mod hello;
