@@ -20,32 +20,31 @@ macro_rules! CGM_image_map {
             }
 
             pub fn pump(&self,result_map:&mut HashMap<ResourceEnum,SupportIdType>,
-            display:&glium::Display,ui:&mut conrod::Ui,image_m:&mut conrod::image::Map< glium::texture::Texture2d>){
-                let assets = find_folder::Search::KidsThenParents(3, 5).for_folder("assets").unwrap();
+            display:&glium::Display,ui:&mut conrod::Ui,image_m:&mut conrod::image::Map< glium::Texture2d>){
                 for (k,v) in &self.map{
                     let  kk = k.clone();
                     if v.source_type =="image"{
-                      let rust_logo = load_image(display, assets.join(v.path));
+                      let rust_logo = load_image(display, v.path);
                       let id_i = image_m.insert(rust_logo);
                        result_map.insert(kk,SupportIdType::ImageId(id_i));
                     } else if v.source_type =="texture"{
-                      let texture_logo = load_image(display, assets.join(v.path));
+                      let texture_logo = load_image(display,v.path);
                        result_map.insert(kk,SupportIdType::TextureId(texture_logo));
                     } else {
-                      let id_f= ui.fonts.insert_from_file( assets.join(v.path)).unwrap();
+                      let id_f= ui.fonts.insert(support::assets::load_font(v.path));
                         result_map.insert(kk,SupportIdType::FontId(id_f));
                     }
                    
                 } 
             }
         }
-     fn load_image<P>(display: &glium::Display, path: P) -> glium::texture::Texture2d
-        where P: AsRef<Path>,
+     fn load_image(display: &glium::Display, path: &str) -> glium::Texture2d
+        
     {
-        let path = path.as_ref();
-        let rgba_image = image::open(&Path::new(&path)).unwrap().to_rgba();
-       let image_dimensions = rgba_image.dimensions();
-       let raw_image = glium::texture::RawImage2d::from_raw_rgba_reversed(&rgba_image.into_raw(), image_dimensions);
+       let rgba_image = support::assets::load_image(path).to_rgba();
+        let image_dimensions = rgba_image.dimensions();
+        let raw_image = glium::texture::RawImage2d::from_raw_rgba_reversed(&rgba_image.into_raw(),
+                                                                        image_dimensions);
         let texture = glium::texture::Texture2d::new(display, raw_image).unwrap();
         texture
     }
@@ -57,7 +56,7 @@ macro_rules! SupportIdType{
         pub enum SupportIdType {
             ImageId(conrod::image::Id),
             FontId(conrod::text::font::Id),
-            TextureId(glium::texture::texture2d::Texture2d)
+            TextureId(glium::Texture2d)
         }
     }
 }
