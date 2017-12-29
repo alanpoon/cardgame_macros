@@ -4,6 +4,8 @@ pub mod game_engine;
 pub mod codec_serde;
 #[macro_use]
 pub mod resources;
+#[macro_use]
+pub mod resources_iter;
 pub mod hello;
 
 #[cfg(test)]

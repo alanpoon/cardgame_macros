@@ -30,6 +30,10 @@ macro_rules! CGM_image_map {
                       let rust_logo = load_image90(display, v.path);
                       let id_i = image_m.insert(rust_logo);
                        result_map.insert(kk,SupportIdType::ImageId(id_i));
+                    }else if v.source_type =="image270"{
+                      let rust_logo = load_image270(display, v.path);
+                      let id_i = image_m.insert(rust_logo);
+                       result_map.insert(kk,SupportIdType::ImageId(id_i));
                     }else if v.source_type =="texture"{
                       let texture_logo = load_image(display,v.path);
                        result_map.insert(kk,SupportIdType::TextureId(texture_logo));
@@ -55,6 +59,16 @@ macro_rules! CGM_image_map {
         
     {
        let rgba_image = support::assets::load_90image(path).to_rgba();
+        let image_dimensions = rgba_image.dimensions();
+        let raw_image = glium::texture::RawImage2d::from_raw_rgba_reversed(&rgba_image.into_raw(),
+                                                                        image_dimensions);
+        let texture = glium::texture::Texture2d::new(display, raw_image).unwrap();
+        texture
+    }
+    fn load_image270(display: &glium::Display, path: &str) -> glium::Texture2d
+        
+    {
+       let rgba_image = support::assets::load_270image(path).to_rgba();
         let image_dimensions = rgba_image.dimensions();
         let raw_image = glium::texture::RawImage2d::from_raw_rgba_reversed(&rgba_image.into_raw(),
                                                                         image_dimensions);
