@@ -37,6 +37,9 @@ macro_rules! CGM_image_map {
                     }else if v.source_type =="texture"{
                       let texture_logo = load_image(display,v.path);
                        result_map.insert(kk,SupportIdType::TextureId(texture_logo));
+                    }else if v.source_type =="music"{
+                      let texture_logo = load_audio(v.path);
+                       result_map.insert(kk,SupportIdType::MusicId(texture_logo));
                     } else {
                       let id_f= ui.fonts.insert(support::assets::load_font(v.path));
                         result_map.insert(kk,SupportIdType::FontId(id_f));
@@ -75,15 +78,9 @@ macro_rules! CGM_image_map {
         let texture = glium::texture::Texture2d::new(display, raw_image).unwrap();
         texture
     }
-    };
-}
-#[macro_export]
-macro_rules! SupportIdType{
-    ()=>{
-        pub enum SupportIdType {
-            ImageId(conrod::image::Id),
-            FontId(conrod::text::font::Id),
-            TextureId(glium::Texture2d)
-        }
+    fn load_audio( path: &str) ->  support::assets::AudioType
+    {
+        support::assets::load_audio(path)
     }
+ };
 }
