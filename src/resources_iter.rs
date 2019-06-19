@@ -10,9 +10,11 @@ macro_rules! WindowResources {
         }
         impl WindowResources {
             pub fn new() -> CrResult<Self> {
+                crayon_bytes::setup()?;
+                crayon_audio::setup()?;
                 Ok(WindowResources{
                     $(
-                        $idx:impl_value!{$idx,$renum,$type,$path}
+                        $idx:impl_value!{$type,$path}
                     ),*
                 })
             }
@@ -29,7 +31,7 @@ macro_rules! WindowResources {
             fn is_set(&self) -> bool {
                 let mut v=0;
                 $(
-                    impl_probe!{$idx,$renum,$type,$path,v,self.$idx}
+                    impl_probe!{$type,v,self.$idx}
                 )*
                 v ==0
             }
@@ -53,17 +55,17 @@ macro_rules! impl_field {
 }
 #[macro_export]
 macro_rules! impl_value {
-    ($idx:ident,$renum:expr,"image",$path:expr)=>{
-        crayon::video::create_texture_from($path)?
+    ("image",$path:expr)=>{
+        crayon::video::create_texture_from($path).unwrap()
     };
-    ($idx:ident,$renum:expr,"texture",$path:expr)=>{
-        crayon::video::create_texture_from($path)?
+    ("texture",$path:expr)=>{
+        crayon::video::create_texture_from($path).unwrap()
     };
-    ($idx:ident,$renum:expr,"font",$path:expr)=>{
-        crayon_bytes::create_bytes_from($path)?
+    ("font",$path:expr)=>{
+        crayon_bytes::create_bytes_from($path).unwrap()
     };
-    ($idx:ident,$renum:expr,"audio",$path:expr)=>{
-        crayon_audio::create_clip_from($path)?
+    ("audio",$path:expr)=>{
+        crayon_audio::create_clip_from($path).unwrap()
     };
 }
 #[macro_export]
@@ -72,33 +74,33 @@ macro_rules! impl_pump {
         $map.insert($renum,SupportIdType::ImageId($image_map.insert($sidx)));
     };
     ($idx:ident,$renum:expr,"texture",$path:expr,$map:expr,$image_map:expr,$ui:expr,$sidx:expr)=>{
-        $map.insert($renum,SupportIdType::TextureId(image_map.insert($sidx)));
+        $map.insert($renum,SupportIdType::TextureId($sidx));
     };
     ($idx:ident,$renum:expr,"font",$path:expr,$map:expr,$image_map:expr,$ui:expr,$sidx:expr)=>{
         $map.insert($renum,SupportIdType::FontId($ui.fonts.insert(Self::load_font($sidx))));
     };
     ($idx:ident,$renum:expr,"audio",$path:expr,$map:expr,$image_map:expr,$ui:expr,$sidx:expr)=>{
-        $map.insert($renum,SupportIdType::TextureId($image_map.insert($sidx)));
+        $map.insert($renum,SupportIdType::AudioId($image_map.insert($sidx)));
     };
 }
 #[macro_export]
 macro_rules! impl_probe {
-    ($idx:ident,$renum:expr,"image",$path:expr,$map:expr,$sidx:expr)=>{
+    ("image",$map:expr,$sidx:expr)=>{
         if crayon::video::texture_state($sidx)==ResourceState::NotReady{
             $map+=1;
         }
     };
-    ($idx:ident,$renum:expr,"texture",$path:expr,$map:expr,$sidx:expr)=>{
+    ("texture",$map:expr,$sidx:expr)=>{
         if crayon::video::texture_state($sidx)==ResourceState::NotReady{
             $map+=1;
         }
     };
-    ($idx:ident,$renum:expr,"font",$path:expr,$map:expr,$sidx:expr)=>{
-        if crayon_bytes::bytes_state($sidx)==ResourceState::NotReady{
+    ("font",$map:expr,$sidx:expr)=>{
+        if crayon_bytes::state($sidx)==ResourceState::NotReady{
             $map+=1;
         }
     };
-    ($idx:ident,$renum:expr,"audio",$path:expr,$map:expr,$sidx:expr)=>{
+    ("audio",$map:expr,$sidx:expr)=>{
         if crayon_audio::clip_state($sidx)==ResourceState::NotReady{
             $map+=1;
         }
@@ -141,6 +143,7 @@ macro_rules! CGM_iter_resource_enum_vala_pump{
 #[macro_export]
 macro_rules! SupportIdType{
     ()=>{
+        #[derive(Clone)]
         pub enum SupportIdType {
             ImageId(conrod_core::image::Id),
             FontBytes(BytesHandle),
